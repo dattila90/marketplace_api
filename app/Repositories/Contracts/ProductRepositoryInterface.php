@@ -13,33 +13,33 @@ use Illuminate\Database\Eloquent\Collection;
  */
 interface ProductRepositoryInterface
 {
-  /**
-   * Find product by ID
-   */
-  public function find(string $id): ?array;
+    /**
+     * Find product by ID
+     */
+    public function find(string $id): ?array;
 
-  /**
-   * Search products with criteria
-   */
-  public function search(array $criteria): array;
+    /**
+     * Search products with criteria
+     */
+    public function search(array $criteria): array;
 
-  /**
-   * Get products by category
-   */
-  public function getByCategory(string $categoryId, int $limit = 10): array;
+    /**
+     * Get products by category
+     */
+    public function getByCategory(string $categoryId, int $limit = 10): array;
 
-  /**
-   * Create new product
-   */
-  public function create(array $data): array;
+    /**
+     * Create new product
+     */
+    public function create(array $data): array;
 
-  /**
-   * Update product
-   */
-  public function update(string $id, array $data): array;
+    /**
+     * Update product
+     */
+    public function update(string $id, array $data): array;
 
-  /**
-   * Delete product
-   */
-  public function delete(string $id): bool;
+    /**
+     * Delete product
+     */
+    public function delete(string $id): bool;
 }
