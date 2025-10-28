@@ -142,10 +142,110 @@ class ProductService
 
     private function buildPaginationMeta(array $criteria, int $total): array
     {
-        return [];
+        $page = $criteria['page'] ?? 1;
+        $perPage = $criteria['per_page'] ?? 15;
+        $lastPage = $total > 0 ? (int) ceil($total / $perPage) : 1;
+        $from = $total > 0 ? (($page - 1) * $perPage) + 1 : null;
+        $to = $total > 0 ? min($page * $perPage, $total) : null;
+
+        return [
+            'current_page' => $page,
+            'per_page' => $perPage,
+            'total' => $total,
+            'last_page' => $lastPage,
+            'from' => $from,
+            'to' => $to,
+            'has_more_pages' => $page < $lastPage,
+            'links' => [
+                'first' => $this->buildPageUrl(1, $criteria),
+                'last' => $this->buildPageUrl($lastPage, $criteria),
+                'prev' => $page > 1 ? $this->buildPageUrl($page - 1, $criteria) : null,
+                'next' => $page < $lastPage ? $this->buildPageUrl($page + 1, $criteria) : null,
+            ],
+            'path' => request()->url(),
+            'query_params' => $this->buildQueryParams($criteria)
+        ];
+    }
+
+    /**
+     * Build URL for pagination links
+     */
+    private function buildPageUrl(int $page, array $criteria): string
+    {
+        $params = $this->buildQueryParams($criteria);
+        $params['page'] = $page;
+
+        return request()->url() . '?' . http_build_query($params);
+    }
+
+    /**
+     * Build query parameters for pagination
+     */
+    private function buildQueryParams(array $criteria): array
+    {
+        $params = [];
+
+        if (!empty($criteria['search'])) {
+            $params['search'] = $criteria['search'];
+        }
+
+        if (!empty($criteria['category_id'])) {
+            $params['category_id'] = $criteria['category_id'];
+        }
+
+        if (!empty($criteria['min_price'])) {
+            $params['min_price'] = $criteria['min_price'];
+        }
+
+        if (!empty($criteria['max_price'])) {
+            $params['max_price'] = $criteria['max_price'];
+        }
+
+        if (!empty($criteria['sort_by']) && $criteria['sort_by'] !== 'relevance') {
+            $params['sort_by'] = $criteria['sort_by'];
+        }
+
+        if (!empty($criteria['sort_direction']) && $criteria['sort_direction'] !== 'desc') {
+            $params['sort_direction'] = $criteria['sort_direction'];
+        }
+
+        if (!empty($criteria['per_page']) && $criteria['per_page'] !== 15) {
+            $params['per_page'] = $criteria['per_page'];
+        }
+
+        return $params;
     }
     private function getAvailableFilters(): array
     {
-        return [];
+        return [
+            'categories' => [
+                ['id' => 'electronics', 'name' => 'Electronics', 'count' => 150],
+                ['id' => 'clothing', 'name' => 'Clothing', 'count' => 80],
+                ['id' => 'books', 'name' => 'Books', 'count' => 45],
+                ['id' => 'home', 'name' => 'Home & Garden', 'count' => 92],
+            ],
+            'brands' => [
+                ['name' => 'Apple', 'count' => 45],
+                ['name' => 'Samsung', 'count' => 38],
+                ['name' => 'Nike', 'count' => 22],
+                ['name' => 'Adidas', 'count' => 18],
+            ],
+            'price_ranges' => [
+                ['min' => 0, 'max' => 25, 'label' => 'Under $25', 'count' => 120],
+                ['min' => 25, 'max' => 50, 'label' => '$25 - $50', 'count' => 85],
+                ['min' => 50, 'max' => 100, 'label' => '$50 - $100', 'count' => 65],
+                ['min' => 100, 'max' => 200, 'label' => '$100 - $200', 'count' => 40],
+                ['min' => 200, 'max' => null, 'label' => 'Over $200', 'count' => 25],
+            ],
+            'ratings' => [
+                ['min' => 4, 'label' => '4+ Stars', 'count' => 180],
+                ['min' => 3, 'label' => '3+ Stars', 'count' => 250],
+                ['min' => 2, 'label' => '2+ Stars', 'count' => 300],
+            ],
+            'availability' => [
+                ['key' => 'in_stock', 'label' => 'In Stock', 'count' => 285],
+                ['key' => 'out_of_stock', 'label' => 'Out of Stock', 'count' => 15],
+            ]
+        ];
     }
 }
