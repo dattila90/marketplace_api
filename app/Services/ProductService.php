@@ -248,4 +248,24 @@ class ProductService
             ]
         ];
     }
+
+    /**
+     * Get featured products for homepage
+     */
+    public function getFeaturedProducts(int $limit = 12): array
+    {
+        $cacheKey = "featured_products_{$limit}";
+
+        return Cache::remember($cacheKey, 1800, function () use ($limit) { // 30 min cache
+            $criteria = [
+                'sort_by' => 'popularity',
+                'sort_direction' => 'desc',
+                'per_page' => $limit,
+                'page' => 1
+            ];
+
+            $results = $this->productRepository->search($criteria);
+            return $this->transformProductList($results['data']);
+        });
+    }
 }
