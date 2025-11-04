@@ -16,11 +16,11 @@ class ElasticsearchClient
 
     public function __construct()
     {
-        $this->config = [
+        $this->config = config('elasticsearch', [
             'hosts' => [env('ELASTICSEARCH_HOST', 'localhost:9200')],
             'retries' => 3,
             'timeout' => 30,
-        ];
+        ]);
 
         // In production: $this->client = new \Elasticsearch\Client($this->config);
     }

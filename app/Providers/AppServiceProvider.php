@@ -11,11 +11,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Bind Repository Interface to Implementation
-        $this->app->bind(
-            \App\Repositories\Contracts\ProductRepositoryInterface::class,
-            \App\Repositories\ProductRepository::class
-        );
+        // General application bindings (non-domain specific)
+
+        // Product-related bindings are now handled by ProductServiceProvider
+        // for better separation of concerns
     }
 
     /**
@@ -23,6 +22,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // General application bootstrapping
     }
 }
