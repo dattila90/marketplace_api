@@ -105,13 +105,13 @@ class ProductService
             'title' => $product['title'],
             'brand' => $product['brand'],
             'price' => [
-                'amount' => (float) $product['price'],
+                'amount' => (float) ($product['price'] ?? 0),
                 'currency' => $product['currency'] ?? 'USD',
-                'formatted' => $this->formatPrice($product['price'], $product['currency'] ?? 'USD')
+                'formatted' => $this->formatPrice($product['price'] ?? 0, $product['currency'] ?? 'USD')
             ],
-            'rating' => (float) $product['rating'],
-            'stock_status' => $this->getStockStatus($product['stock']),
-            'availability' => $product['stock'] > 0,
+            'rating' => (float) ($product['rating'] ?? 0),
+            'stock_status' => $this->getStockStatus((int) ($product['stock'] ?? 0)),
+            'availability' => ($product['stock'] ?? 0) > 0,
             'popularity_score' => $product['popularity'] ?? 0,
             'category_id' => $product['category_id'],
             'seller_id' => $product['seller_id'],

@@ -119,7 +119,17 @@ class ElasticsearchClient
                     'title' => "Sample Product {$id}",
                     'brand' => 'Test Brand',
                     'price' => rand(10, 500),
-                    'category_id' => 'category-1'
+                    'currency' => 'USD',
+                    'rating' => rand(3, 5) + (rand(0, 99) / 100),
+                    'stock' => rand(0, 100),
+                    'popularity' => rand(1, 1000),
+                    'category_id' => 'category-1',
+                    'seller_id' => 'seller-' . rand(1, 10),
+                    'attributes' => [
+                        'color' => 'Blue',
+                        'size' => 'Medium'
+                    ],
+                    'created_at' => now()->subDays(rand(1, 30))->toISOString()
                 ]
             ];
         }
