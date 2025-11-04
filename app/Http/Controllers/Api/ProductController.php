@@ -70,11 +70,10 @@ class ProductController extends Controller
     /**
      * Get single product by ID
      * 
-     * @param Request $request
      * @param string $id
      * @return JsonResponse
      */
-    public function product(Request $request, string $id): JsonResponse
+    public function product(string $id): JsonResponse
     {
         try {
             $product = $this->productService->getProductById($id);
