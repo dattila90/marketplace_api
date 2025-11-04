@@ -27,7 +27,7 @@ class ProductRepository implements ProductRepositoryInterface
      */
     public function find(string $id): ?array
     {
-        $product = Product::find($id);
+        $product = Product::with('category')->find($id);
         return $product ? $product->toArray() : null;
     }
 
@@ -55,6 +55,21 @@ class ProductRepository implements ProductRepositoryInterface
     {
         $products = Product::where('category_id', $categoryId)
             ->where('stock', '>', 0)
+            ->limit($limit)
+            ->get();
+
+        return $products->toArray();
+    }
+
+    /**
+     * Get featured products (highest rated, in stock)
+     */
+    public function getFeatured(int $limit = 10): array
+    {
+        $products = Product::with('category')
+            ->where('stock', '>', 0)
+            ->orderBy('rating', 'desc')
+            ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();
 

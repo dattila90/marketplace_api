@@ -33,4 +33,12 @@ class Product extends Model
     'popularity' => 'integer',
     'attributes' => 'array',
   ];
+
+  /**
+   * Get the category that owns the product
+   */
+  public function category()
+  {
+    return $this->belongsTo(Category::class);
+  }
 }

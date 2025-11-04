@@ -68,6 +68,35 @@ class ProductController extends Controller
     }
 
     /**
+     * Get single product by ID
+     * 
+     * @param Request $request
+     * @param string $id
+     * @return JsonResponse
+     */
+    public function product(Request $request, string $id): JsonResponse
+    {
+        try {
+            $product = $this->productService->getProductById($id);
+
+            if (!$product) {
+                return $this->errorResponse(
+                    'Product not found',
+                    Response::HTTP_NOT_FOUND
+                );
+            }
+
+            return $this->successResponse($product, 'Product retrieved successfully');
+        } catch (Exception $e) {
+            return $this->errorResponse(
+                'Failed to retrieve product',
+                Response::HTTP_INTERNAL_SERVER_ERROR,
+                $e->getMessage()
+            );
+        }
+    }
+
+    /**
      * Standard success response format
      * 
      * @param mixed $data

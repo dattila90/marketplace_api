@@ -55,6 +55,81 @@ class ProductService
     }
 
     /**
+     * Get featured products for homepage
+     */
+    public function getFeaturedProducts(int $limit = 12): array
+    {
+        $cacheKey = "featured_products_{$limit}";
+
+        return Cache::remember($cacheKey, 1800, function () use ($limit) { // 30 min cache
+
+            // First, try Elasticsearch via repository search
+            try {
+                $criteria = [
+                    'sort_by' => 'popularity',
+                    'sort_direction' => 'desc',
+                    'per_page' => $limit,
+                    'page' => 1
+                ];
+
+                $searchResults = $this->productRepository->search($criteria);
+
+                // Check if we got valid results (not empty and not mock data)
+                if (
+                    !empty($searchResults['data']) &&
+                    count($searchResults['data']) > 0 &&
+                    !$this->isMockData($searchResults['data'])
+                ) {
+
+                    Log::info('Featured products: Using search results (likely ES)', [
+                        'count' => count($searchResults['data']),
+                        'source' => 'search_method'
+                    ]);
+
+                    return $this->transformProductList($searchResults['data']);
+                }
+
+                Log::warning('Featured products: Search returned empty or mock data, using database fallback');
+            } catch (\Exception $e) {
+                Log::warning('Featured products: Search failed, using database fallback', [
+                    'error' => $e->getMessage()
+                ]);
+            }
+
+            // Fallback: Get featured products directly from database (highest rated first)
+            $products = $this->productRepository->getFeatured($limit);
+
+            Log::info('Featured products: Using database results', [
+                'count' => count($products),
+                'source' => 'database'
+            ]);
+
+            return $this->transformProductList($products);
+        });
+    }
+
+    /**
+     * Check if the data is mock/fake data from ES
+     */
+    private function isMockData(array $data): bool
+    {
+        // Check if first product has mock ID pattern
+        if (!empty($data) && isset($data[0]['id'])) {
+            return str_starts_with($data[0]['id'], 'product-');
+        }
+        return false;
+    }
+
+    /**
+     * Get product by ID
+     */
+    public function getProductById(string $id): ?array
+    {
+        $product = $this->productRepository->find($id);
+        return $product ? $this->transformProduct($product) : null;
+    }
+
+    /**
      * Sanitize and validate search criteria
      */
     private function sanitizeSearchCriteria(array $criteria): array
@@ -100,20 +175,24 @@ class ProductService
      */
     private function transformProduct(array $product): array
     {
+        $price = (float) ($product['price'] ?? 0);
+        $currency = $product['currency'] ?? 'USD';
+
         return [
             'id' => $product['id'],
             'title' => $product['title'],
             'brand' => $product['brand'],
             'price' => [
-                'amount' => (float) ($product['price'] ?? 0),
-                'currency' => $product['currency'] ?? 'USD',
-                'formatted' => $this->formatPrice($product['price'] ?? 0, $product['currency'] ?? 'USD')
+                'amount' => $price,
+                'currency' => $currency,
+                'formatted' => $this->formatPrice($price, $currency)
             ],
             'rating' => (float) ($product['rating'] ?? 0),
             'stock_status' => $this->getStockStatus((int) ($product['stock'] ?? 0)),
             'availability' => ($product['stock'] ?? 0) > 0,
             'popularity_score' => $product['popularity'] ?? 0,
             'category_id' => $product['category_id'],
+            'category_name' => $product['category']['name'] ?? null,
             'seller_id' => $product['seller_id'],
             'attributes' => $product['attributes'] ?? [],
             'created_at' => $product['created_at'] ?? null
@@ -247,25 +326,5 @@ class ProductService
                 ['key' => 'out_of_stock', 'label' => 'Out of Stock', 'count' => 15],
             ]
         ];
-    }
-
-    /**
-     * Get featured products for homepage
-     */
-    public function getFeaturedProducts(int $limit = 12): array
-    {
-        $cacheKey = "featured_products_{$limit}";
-
-        return Cache::remember($cacheKey, 1800, function () use ($limit) { // 30 min cache
-            $criteria = [
-                'sort_by' => 'popularity',
-                'sort_direction' => 'desc',
-                'per_page' => $limit,
-                'page' => 1
-            ];
-
-            $results = $this->productRepository->search($criteria);
-            return $this->transformProductList($results['data']);
-        });
     }
 }

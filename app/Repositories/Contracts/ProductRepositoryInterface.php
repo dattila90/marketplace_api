@@ -29,6 +29,11 @@ interface ProductRepositoryInterface
     public function getByCategory(string $categoryId, int $limit = 10): array;
 
     /**
+     * Get featured products (highest rated, in stock)
+     */
+    public function getFeatured(int $limit = 10): array;
+
+    /**
      * Create new product
      */
     public function create(array $data): array;
