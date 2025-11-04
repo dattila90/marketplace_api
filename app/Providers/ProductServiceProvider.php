@@ -42,7 +42,7 @@ class ProductServiceProvider extends ServiceProvider
     public function register(): void
     {
         // Register QueryBuilder (fresh instance for each usage)
-        $this->app->bind(ElasticsearchQueryBuilder::class, function () {
+        $this->app->bind(ElasticsearchQueryBuilder::class, function (Application $app) {
             return new ElasticsearchQueryBuilder();
         });
 
@@ -83,7 +83,7 @@ class ProductServiceProvider extends ServiceProvider
     {
         // Development: Enable query logging for Elasticsearch
         if ($this->app->environment('local', 'development')) {
-            $this->app->extend(ElasticsearchClient::class, function ($client) {
+            $this->app->extend(ElasticsearchClient::class, function ($client, $app) {
                 // Could add development-specific configurations
                 return $client;
             });
