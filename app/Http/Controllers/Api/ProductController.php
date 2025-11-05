@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductSearchRequest;
 use App\Services\ProductService;
+use App\Exceptions\Product\ProductNotFoundException;
+use App\Exceptions\Product\ProductSearchException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -32,6 +34,9 @@ class ProductController extends Controller
             $results = $this->productService->searchProducts($criteria);
 
             return $this->successResponse($results, 'Products retrieved successfully');
+        } catch (ProductSearchException $e) {
+            // Custom exception will be handled by global exception handler
+            throw $e;
         } catch (Exception $e) {
             return $this->errorResponse(
                 'Failed to search products',
@@ -77,15 +82,10 @@ class ProductController extends Controller
     {
         try {
             $product = $this->productService->getProductById($id);
-
-            if (!$product) {
-                return $this->errorResponse(
-                    'Product not found',
-                    Response::HTTP_NOT_FOUND
-                );
-            }
-
             return $this->successResponse($product, 'Product retrieved successfully');
+        } catch (ProductNotFoundException $e) {
+            // Custom exception will be handled by global exception handler
+            throw $e;
         } catch (Exception $e) {
             return $this->errorResponse(
                 'Failed to retrieve product',

@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Repositories\Contracts\ProductRepositoryInterface;
+use App\Exceptions\Product\ProductNotFoundException;
+use App\Exceptions\Product\ProductSearchException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Exception;
@@ -42,14 +44,13 @@ class ProductService
                     'error' => $e->getMessage()
                 ]);
 
-                // Return empty results on failure
-                return [
-                    'products' => [],
-                    'total' => 0,
-                    'pagination' => $this->buildPaginationMeta($criteria, 0),
-                    'filters' => $this->getAvailableFilters(),
-                    'error' => 'Search temporarily unavailable'
-                ];
+                // Throw custom search exception with context
+                throw new ProductSearchException(
+                    'Product search service temporarily unavailable',
+                    $criteria,
+                    $e->getMessage(),
+                    $e
+                );
             }
         });
     }
@@ -126,7 +127,12 @@ class ProductService
     public function getProductById(string $id): ?array
     {
         $product = $this->productRepository->find($id);
-        return $product ? $this->transformProduct($product) : null;
+
+        if (! $product) {
+            throw new ProductNotFoundException($id);
+        }
+
+        return $this->transformProduct($product);
     }
 
     /**
