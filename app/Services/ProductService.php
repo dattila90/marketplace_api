@@ -144,7 +144,9 @@ class ProductService
             'search' => trim($criteria['search'] ?? ''),
             'category_id' => $criteria['category_id'] ?? null,
             'min_price' => max(0, (float) ($criteria['min_price'] ?? 0)),
-            'max_price' => $criteria['max_price'] ? max(0, (float) $criteria['max_price']) : null,
+            'max_price' => isset($criteria['max_price']) && $criteria['max_price'] !== null
+                ? max(0, (float) $criteria['max_price'])
+                : null,
             'sort_by' => in_array($criteria['sort_by'] ?? '', ['price', 'rating', 'popularity', 'date'])
                 ? $criteria['sort_by'] : 'relevance',
             'sort_direction' => in_array($criteria['sort_direction'] ?? '', ['asc', 'desc'])

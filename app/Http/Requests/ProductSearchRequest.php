@@ -40,15 +40,19 @@ class ProductSearchRequest extends FormRequest
      */
     public function getSearchCriteria(): array
     {
-        return $this->only([
-            'search',
-            'category_id',
-            'min_price',
-            'max_price',
-            'sort_by',
-            'sort_direction',
-            'page',
-            'per_page'
-        ]);
+        // Use safe access to avoid validation issues during testing
+        $data = $this->all();
+
+        // Ensure all expected keys exist to prevent undefined array key errors
+        return [
+            'search' => $data['search'] ?? '',
+            'category_id' => $data['category_id'] ?? null,
+            'min_price' => $data['min_price'] ?? null,
+            'max_price' => $data['max_price'] ?? null,
+            'sort_by' => $data['sort_by'] ?? 'relevance',
+            'sort_direction' => $data['sort_direction'] ?? 'desc',
+            'page' => $data['page'] ?? 1,
+            'per_page' => $data['per_page'] ?? 15,
+        ];
     }
 }
